@@ -1,4 +1,5 @@
 import random , numpy
+from datetime import datetime
 from scipy.stats import t , f
 
 
@@ -292,30 +293,39 @@ xnat = [ [ x1min , x2min , x3min ] ,
 n = 15
 m = 2
 
-while True:
+start_time = datetime.now()
+count = 100
+for number in range(count):
+    print("\nНомер циклу {}".format(number + 1))
     while True:
-        print ( "\nПоточний m = {}\n".format ( m ) )
-        xnatmod = [ [ xnat[ i ][ j ] for i in range ( 15 ) ] for j in range ( 3 ) ]
-        maty = geny ( n , m )
-        matymod = [ maty[ i ][ -1 ] for i in range ( len ( maty ) ) ]
+        while True:
+            print ( "\nПоточний m = {}\n".format ( m ) )
+            xnatmod = [ [ xnat[ i ][ j ] for i in range ( 15 ) ] for j in range ( 3 ) ]
+            maty = geny ( n , m )
+            matymod = [ maty[ i ][ -1 ] for i in range ( len ( maty ) ) ]
 
-        kohren_flag = kohren ( maty , 3 , 15 )
-        print ( "Дисперсія {}однорідна, з ймовірністю = {:.2}"
-                .format ( "" if kohren_flag else "не " , 0.95 ) )
-        if kohren_flag:
+            kohren_flag = kohren ( maty , 3 , 15 )
+            print ( "Дисперсія {}однорідна, з ймовірністю = {:.2}"
+                    .format ( "" if kohren_flag else "не " , 0.95 ) )
+            if kohren_flag:
+                break
+            else:
+                m += 1
+
+        b0 = get_b ( matymod )
+
+        dmas = student ( n , m , maty )
+        d = sum ( dmas )
+
+        fishercheck = fisher ( b0 , xnatmod , n , m , d , maty )
+        print ( "Рівняння {}адекватне, з ймовірністю = {:.2f}\n"
+                .format ( "" if fishercheck else "не " , 0.95 ) )
+        all_print ()
+        print ( "\nКількість значущих коефіцієнтів, d = {}".format ( d ) )
+        if fishercheck:
             break
-        else:
-            m += 1
+    print("-----------------------------------------------------------------------------------------------------------")
 
-    b0 = get_b ( matymod )
-
-    dmas = student ( n , m , maty )
-    d = sum ( dmas )
-
-    fishercheck = fisher ( b0 , xnatmod , n , m , d , maty )
-    print ( "Рівняння {}адекватне, з ймовірністю = {:.2f}\n"
-            .format ( "" if fishercheck else "не " , 0.95 ) )
-    all_print ()
-    print ( "\nКількість значущих коефіцієнтів, d = {}".format ( d ) )
-    if fishercheck:
-        break
+time = (datetime.now() - start_time).total_seconds()
+print("\nЧас виконання програми {} сек".format(time))
+print("\nСередній час виконання одного циклу {} сек".format(time / count))
